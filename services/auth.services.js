@@ -1,5 +1,6 @@
 import User from "../models/user.model.js"
 import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken"
 
 const signup = async (req, res) => {
   try {
@@ -54,4 +55,51 @@ const signup = async (req, res) => {
   }
 }
 
-export { signup }
+const login = async (req, res) => {
+  try {
+    const { loginInfo, password } = req.body
+
+    if (!loginInfo || !password) {
+      return res.status(400).json({ message: "Provide all fields" })
+    }
+
+    const user = await User.findOne({
+      $or: [{ email: loginInfo }, { username: loginInfo }],
+    })
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" })
+    }
+
+    const passwordCheck = await bcrypt.compare(password, user.password)
+
+    if (!passwordCheck) {
+      return res.status(401).json({ message: "Wrong password" })
+    }
+
+    delete user._doc.password
+
+    const token = jwt.sign({ payload: user }, process.env.TOKEN_SECRET, {
+      algorithm: "HS256",
+      expiresIn: "24h",
+    })
+
+    return res.status(200).json({ message: "Logged in", token })
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json(error)
+  }
+}
+
+const verify = async (req, res) => {
+  try {
+    return res
+      .status(200)
+      .json({ message: "All good, verified", payload: req.payload })
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json(error)
+  }
+}
+
+export { signup, login, verify }

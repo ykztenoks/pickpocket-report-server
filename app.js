@@ -6,6 +6,7 @@ import userRouter from "./routes/user.routes.js"
 import "dotenv/config"
 
 const app = express()
+
 app.use(morgan("dev"))
 app.use(helmet())
 app.use(express.json())
