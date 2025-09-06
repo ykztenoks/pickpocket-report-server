@@ -3,6 +3,9 @@ import morgan from "morgan"
 import connectDB from "./db/db.connect.js"
 import helmet from "helmet"
 import userRouter from "./routes/user.routes.js"
+import reportRouter from "./routes/report.routes.js"
+import commentRouter from "./routes/comment.routes.js"
+import cors from "cors"
 import "dotenv/config"
 
 const app = express()
@@ -10,6 +13,7 @@ const app = express()
 app.use(morgan("dev"))
 app.use(helmet())
 app.use(express.json())
+app.use(cors({ origin: "http://localhost:5173" }))
 
 app.get("/health", async (req, res) => {
   try {
@@ -21,6 +25,8 @@ app.get("/health", async (req, res) => {
 })
 
 app.use("/user", userRouter)
+app.use("/report", reportRouter)
+app.use("/comment", commentRouter)
 
 app.listen(process.env.PORT, () => {
   console.clear()
